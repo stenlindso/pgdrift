@@ -46,6 +46,25 @@ func TestWriteText_WithChanges(t *testing.T) {
 	}
 }
 
+func TestWriteText_MultipleChanges(t *testing.T) {
+	var buf bytes.Buffer
+	w := report.NewWriter(&buf, report.FormatText)
+	result := makeResult(
+		diff.Change{Object: "table:users", ChangeType: diff.ChangeAdded, Detail: "table added"},
+		diff.Change{Object: "column:orders.total", ChangeType: diff.ChangeAltered, Detail: "type changed"},
+		diff.Change{Object: "index:idx_old", ChangeType: diff.ChangeRemoved, Detail: "index removed"},
+	)
+	if err := w.Write(result); err != nil {
+		t.Fatal(err)
+	}
+	out := buf.String()
+	for _, want := range []string{"table:users", "column:orders.total", "index:idx_old"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("expected output to contain %q, got: %s", want, out)
+		}
+	}
+}
+
 func TestWriteJSON_NoDrift(t *testing.T) {
 	var buf bytes.Buffer
 	w := report.NewWriter(&buf, report.FormatJSON)
