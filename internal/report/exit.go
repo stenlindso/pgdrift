@@ -28,3 +28,18 @@ func ExitCodeStrict(result *diff.Result) int {
 	}
 	return 0
 }
+
+// ExitCodeForSeverity returns exit code 1 if any change in the result matches
+// exactly the given severity level. This is useful when callers want to trigger
+// on a specific severity rather than a minimum threshold.
+func ExitCodeForSeverity(result *diff.Result, level diff.SeverityLevel) int {
+	if result == nil || !result.HasDrift() {
+		return 0
+	}
+	for _, ch := range result.Changes {
+		if diff.Severity(ch.Kind) == level {
+			return 1
+		}
+	}
+	return 0
+}
