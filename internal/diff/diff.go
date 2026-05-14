@@ -39,6 +39,17 @@ func (r *Result) Add(c Change) {
 	r.Changes = append(r.Changes, c)
 }
 
+// FilterByType returns only the changes matching the given ChangeType.
+func (r *Result) FilterByType(ct ChangeType) []Change {
+	var filtered []Change
+	for _, c := range r.Changes {
+		if c.ChangeType == ct {
+			filtered = append(filtered, c)
+		}
+	}
+	return filtered
+}
+
 // Compare detects schema drift between a source and target schema.
 func Compare(source, target *schema.Schema) *Result {
 	result := &Result{}
@@ -118,14 +129,6 @@ func compareColumns(tableName, colName string, src, tgt *schema.Table, result *R
 			Object:     fmt.Sprintf("column:%s.%s", tableName, colName),
 			ChangeType: ChangeAltered,
 			Detail:     fmt.Sprintf("nullable changed from %v to %v", srcCol.Nullable, tgtCol.Nullable),
-		})
-	}
-
-	if srcCol.Default != tgtCol.Default {
-		result.Add(Change{
-			Object:     fmt.Sprintf("column:%s.%s", tableName, colName),
-			ChangeType: ChangeAltered,
-			Detail:     fmt.Sprintf("default changed from %q to %q", srcCol.Default, tgtCol.Default),
 		})
 	}
 }
