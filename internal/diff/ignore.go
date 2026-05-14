@@ -1,6 +1,8 @@
 package diff
 
 // IgnoreRule defines a rule for suppressing specific drift changes.
+// Fields act as filters: an empty string matches any value (wildcard).
+// For example, setting only Schema will suppress all changes in that schema.
 type IgnoreRule struct {
 	Schema string
 	Table  string
@@ -43,6 +45,16 @@ func (il *IgnoreList) Apply(r *Result) *Result {
 		}
 	}
 	return out
+}
+
+// Add appends a new rule to the IgnoreList.
+func (il *IgnoreList) Add(r IgnoreRule) {
+	il.rules = append(il.rules, r)
+}
+
+// Len returns the number of rules in the IgnoreList.
+func (il *IgnoreList) Len() int {
+	return len(il.rules)
 }
 
 // matchField returns true when the rule field is empty (wildcard) or equals the value.
